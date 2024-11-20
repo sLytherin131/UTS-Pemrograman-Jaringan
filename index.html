@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stream</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    #donation-container {
+      width: 60%;
+      max-width: 600px;
+      min-height: 400px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .donation-message {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #f0f8ff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Stream</h1>
+  <div id="donation-container"></div>
+
+  <script>
+    const ws = new WebSocket("ws://localhost:8080/ws");
+    ws.onmessage = function(event) {
+      const donationContainer = document.getElementById("donation-container");
+      const message = document.createElement("div");
+      message.className = "donation-message";
+
+      // Parsing pesan dan menampilkannya dengan format yang benar
+      const messageParts = event.data.split(":");
+      if (messageParts.length === 3) {
+        const username = messageParts[0];
+        const amount = parseInt(messageParts[1], 10);
+        const messageText = messageParts[2];
+        message.innerHTML = `
+          <p><strong>${username}</strong></p>
+          <p>${messageText}</p>
+          <p>Nominal: Rp${amount}</p>
+        `;
+      } else {
+        message.textContent = event.data; // Tampilkan pesan asli jika format tidak sesuai
+      }
+
+      donationContainer.appendChild(message);
+      donationContainer.scrollTop = donationContainer.scrollHeight;
+    };
+    ws.onclose = function() {
+      alert("Koneksi WebSocket terputus");
+    };
+  </script>
+</body>
+</html>
